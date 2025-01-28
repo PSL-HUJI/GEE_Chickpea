@@ -9,7 +9,7 @@ This project contains a Google Earth Engine (GEE) script to serve as an example 
 The mechanistic model relies on the availability of Sentinel-2 clear imagery and AgERA5 data on GEE. While Sentinel-2 is updated almost in real-time, AgERA5 data has a delay of approximately seven days. The forecast model relies on the availability of Sentinel-2 clear imagery.
 
 ### Main Features in Function 1:
-1. Compute LAI (Leaf Area Index) layers based on Sentinel-2 NDVI. [example](https://brill.com/edcollchap/book/9789086869473/BP000021.xml).
+1. Compute LAI (Leaf Area Index) layers based on Sentinel-2 NDVI. [for example](https://brill.com/edcollchap/book/9789086869473/BP000021.xml).
 2. Linearily interpolate daily LAI layers between sowing to the latest Sentinel-2 LAI layer.
 3. Based on LAI pixel values in each layer, compute the fraction of solar intercepted radiation using the formula $1-exp(-0.5*LAI)$ 
 4. Computes daily produced biomass and cumulative biomass using the formula.
@@ -30,6 +30,8 @@ The mechanistic model relies on the availability of Sentinel-2 clear imagery and
 6. Run the model by pressing the button "Model AGB and GW".
 
 #### Notes
+**The provided scripts tested on chickpea data**
+**The `GEE_main_app_script.js` includes radiation use efficiency, LAI Sentinel-2 NDVI based and harvest index that calibrated on chickpea**
 You may change simulation-stopping rules. Currently, it will search increase above LAI of 2 and decrease to below 2 afterward, if it does not find an increase above 2 it will take the most recent Sentinel-2 clear imagery. 
 
 ### How to Use the empirical RF model for your crop

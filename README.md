@@ -41,14 +41,14 @@ You may change simulation-stopping rules. Currently, it will search increase abo
 3. Train random forest model - Sentinel-2 bands as predictors and yield as outcome (example in file `GEE_train_rf_model_yield_data.js`). 
 4. Save the model as an asset.
 #### Second stage - load the model in the main app script and use it on the last available Sentinel-2 imagery 
-1. Load the model within the main app script ( by defining the path to that model.
+1. Load the model within the main app script (by copy the path to model asset location).
 2. Run the script and draw a polygon on the map to define your region of interest (as done for the mechanistic model). 
 3. Run the forecast by pressing the button "Forecast GY".
    
 ### Requirements
 - Google Earth Engine account.
 - Calibrated parameters for the mechanistic model  - radiation use efficiency and harvest index relationship to cumulative degree days
-- Sub-field yield data for the forecast model - sub field yield data, mostly acquired from combine harvesters, already cleaned and averaged to Sentinel-2 pixels. 
+- Sub-field yield data for the forecast model - sub-field yield data, mostly acquired from combine harvesters, already cleaned and averaged to Sentinel-2 pixels. 
 
 ### Example Output
 - Mechanistic model - Above-ground biomass and grain weight layers: `ton/ha`, at final simulation date. 

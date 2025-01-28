@@ -34,7 +34,7 @@ You may change simulation-stopping rules. Currently, it will search increase abo
 #### First stage - train RF empirical model on GEE using yield data and Sentinel-2 band reflectance 
 1. Open the [Google Earth Engine Code Editor](https://code.earthengine.google.com/).
 2. Upload your yield data as an asset (shapefile format).
-3. Train random forest model - Sentinel-2 bands as predictors and yield as outcome (example in file GEE_train_rf_model_yield_data.js). 
+3. Train random forest model - Sentinel-2 bands as predictors and yield as outcome (example in file `GEE_train_rf_model_yield_data.js`). 
 4. Save the model as an asset.
 #### Second stage - load the model in the main app script and use it on the last available Sentinel-2 imagery 
 1. Load the model within the main app script ( by defining the path to that model.

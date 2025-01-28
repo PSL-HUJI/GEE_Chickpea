@@ -921,7 +921,7 @@ function onPredictionButtonClick(){
   var latestImageDate = ee.Date(latestImage.get('system:time_start')).format('YYYY-MM-dd').getInfo();
 
   // Load the pre-trained Random Forest classifier
-  var classifierAssetId = 'projects/pslchickpea/assets/trained_rf_yield_model';
+  var classifierAssetId = 'path/to/the/random/forest/classifier';
   var savedClassifier = ee.Classifier.load(classifierAssetId);
 
   // Apply the classifier to the latest image

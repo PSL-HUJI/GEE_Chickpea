@@ -9,7 +9,7 @@ This project contains a Google Earth Engine (GEE) script to serve as an example 
 The mechanistic model relies on the availability of Sentinel-2 clear imagery and AgERA5 data on GEE. While Sentinel-2 is updated almost in real-time, AgERA5 data has a delay of approximately seven days. The forecast model relies on the availability of Sentinel-2 clear imagery.
 
 ### Main Features in Function 1:
-1. Compute LAI (Leaf Area Index) layers based on Sentinel-2 NDVI. reference[https://brill.com/edcollchap/book/9789086869473/BP000021.xml].
+1. Compute LAI (Leaf Area Index) layers based on Sentinel-2 NDVI. [example](https://brill.com/edcollchap/book/9789086869473/BP000021.xml).
 2. Linearily interpolate daily LAI layers between sowing to the latest Sentinel-2 LAI layer.
 3. Based on LAI pixel values in each layer, compute the fraction of solar intercepted radiation using the formula $1-exp(-0.5*LAI)$ 
 4. Computes daily produced biomass and cumulative biomass using the formula.

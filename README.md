@@ -30,8 +30,8 @@ The mechanistic model relies on the availability of Sentinel-2 clear imagery and
 6. Run the model by pressing the button "Model AGB and GW".
 
 #### Notes
-**The provided scripts tested on chickpea data**
-**The `GEE_main_app_script.js` includes radiation use efficiency, LAI Sentinel-2 NDVI based and harvest index that calibrated on chickpea**
+**The provided scripts tested on chickpea data**<br>
+**The `GEE_main_app_script.js` includes radiation use efficiency, LAI Sentinel-2 NDVI based and harvest index that calibrated on chickpea**<br>
 You may change simulation-stopping rules. Currently, it will search increase above LAI of 2 and decrease to below 2 afterward, if it does not find an increase above 2 it will take the most recent Sentinel-2 clear imagery. 
 
 ### How to Use the empirical RF model for your crop

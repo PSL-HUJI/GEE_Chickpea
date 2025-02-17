@@ -2,8 +2,8 @@
 // Yield data uploaded to GEE already in a clean format (filter rules on combine harvester speed, yield and spatial filtering for disturbance points)
 // In addition, all yield points located inside the 20m pixel of Sentinel-2 were averaged and yield data uploaded as the centroid of that pixel
 
-// Define the path to eh yield data asset 
-var yieldData=ee.FeatureCollection('projects/pslchickpea/assets/yield_all');
+// Define the path to yield data uploaded to the GEE asset
+var yieldData=ee.FeatureCollection('Thre path to yield data location in GEE Asset');
 
 // Center the map on the yield data extent
 var bounds = yieldData.geometry().bounds();
@@ -19,8 +19,8 @@ var image1 = ee.Image('COPERNICUS/S2_SR_HARMONIZED/20230505T081609_20230505T0830
 var image2 = ee.Image('COPERNICUS/S2_SR_HARMONIZED/20230505T081609_20230505T083042_T36SXB')
   .select(['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8A', 'B11', 'B12']);
 
-// Combine the two images into one using mosaic
-var sxa_sxb_combined = ee.ImageCollection([image1,image2]).mosaic();
+// Combine the two images into one using mosaic 
+var mosaic_image1_image2 = ee.ImageCollection([image1,image2]).mosaic();
 
 // Visualization parameters for RGB bands to see the mosaic
 var visParams = {
@@ -43,7 +43,7 @@ Map.addLayer(sxa_sxb_combined, {bands: ['B4', 'B3', 'B2'], min: 0, max: 3000}, '
 Map.addLayer(yieldData, {color: 'red'}, 'Yield Data');
 
 //Directly sample reflectance values at yield locations
-//This function is basically iterating over each row in the yield data and matching its Sentinel-2 reflectance
+//This function is iterating over each row in the yield data and matching its Sentinel-2 reflectance - build the training data for the random forest machine learning fitting
 var trainingData = yieldData.map(function(feature) {
   var reflectanceValues = sxa_sxb_combined.reduceRegion({
     reducer: ee.Reducer.mean(),

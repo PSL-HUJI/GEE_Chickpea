@@ -334,7 +334,8 @@ function onS2ButtonClick() {
 
     // Filter the collection to include only images from one tile
     sentinel2 = sentinel2.filter(ee.Filter.eq('MGRS_TILE', mgrsTile));
-  
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+    // User may change the lineae LAI relationship to Sentinel-2 NDVI according to other crop type 
     // Clip the image collection to the region and calculate LAI for each image based on
     // Simple linear regression between Sentinel-2 NDVI (B4 and B8) 10m (404 ground truth measurments)
     var laiCollection = sentinel2.map(function(image) {
@@ -342,7 +343,7 @@ function onS2ButtonClick() {
         var lai = ndvi.multiply(14.72).subtract(2.83).rename('LAI');
         return lai.clip(region).set('system:time_start', image.get('system:time_start'));
     });
-    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // To decide which sentinel-2 LAI layers will be taken for computation  - the field LAI average is being calculated
     // Calculate the average LAI for each image
     var laiAverages = laiCollection.map(function(image) {
@@ -557,10 +558,11 @@ function onS2ButtonClick() {
 
             //Collect the transformed Megajoule values into a list, ordered by time
             var radiationValuesListMJ = radiationValues.aggregate_array('mean_radiation_MJ');
-
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Radiation Use Efficiency in units of ton per mega joul, user may change it to the RUE of other crop
             // Define your constant factor here
             var chosenConstant = ee.Number(0.0000003151);  
-
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Multiply each image in intercepted_radiation by its corresponding Megajoule scalar and constant
             var biomassPerDayCollection = intercepted_radiation.map(function(image) {
               // Get the index of this image in the collection and use it to get the corresponding radiation value
@@ -677,7 +679,8 @@ function onS2ButtonClick() {
             reducer: ee.Reducer.sum(),
             axes: [0] // Sum along the array
           }).get([0]);
-
+          ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          // This is the cumulative degree days three-step function relationship to HI, the user may change it per other crop 
           // Conditional calculation based on cumulative sum range
           var transformedTemperature = ee.Algorithms.If(
             cumulativeTemperatureSum.gte(1430).and(cumulativeTemperatureSum.lte(2455)),
@@ -688,7 +691,7 @@ function onS2ButtonClick() {
               0  // Use 0 if below 1430
             )
           );
-
+          ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
           // Check cumulativeTemperatureSum and display message if below 1500
           if (cumulativeTemperatureSum.lt(1430).getInfo()) {
             var warningMessage = ui.Label({
@@ -919,11 +922,12 @@ function onPredictionButtonClick(){
   
   //Extract the date of the latest image
   var latestImageDate = ee.Date(latestImage.get('system:time_start')).format('YYYY-MM-dd').getInfo();
-
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // This is the part where the empirical machine learning RF model is being loaded from the asset location
   // Load the pre-trained Random Forest classifier
-  var classifierAssetId = 'path/to/the/random/forest/classifier';
+  var classifierAssetId = 'path to the random forest classifier asset location';
   var savedClassifier = ee.Classifier.load(classifierAssetId);
-
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Apply the classifier to the latest image
   var predictedYield = latestImage.classify(savedClassifier).rename('predicted_yield');
 

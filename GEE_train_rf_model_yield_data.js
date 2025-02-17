@@ -69,10 +69,10 @@ var trainedRF = ee.Classifier.smileRandomForest({
     inputProperties: ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8A', 'B11', 'B12'] // Predictors
   });
 
-// Define the asset ID where the classifier will be saved
-var classifierAssetId = 'projects/pslchickpea/assets/trained_rf_yield_model';
+// Define the asset ID where the classifier will be saved 
+var classifierAssetId = 'the asset path in which the machine learning RF algorithm will be saved';
 
-// Export the trained Random Forest classifier to your Earth Engine assets
+// Export the trained Random Forest classifier to Earth Engine assets
 Export.classifier.toAsset({
   classifier: trainedRF,
   description: 'ExportedRFYieldModel',

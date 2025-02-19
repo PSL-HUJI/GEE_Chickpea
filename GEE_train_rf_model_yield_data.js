@@ -1,6 +1,7 @@
 //////Important
 // Yield data uploaded to GEE already in a clean format (filter rules on combine harvester speed, yield and spatial filtering for disturbance points)
 // In addition, all yield points located inside the 20m pixel of Sentinel-2 were averaged and yield data uploaded as the centroid of that pixel
+// The sub-field yield shapefile data is located in the folder named 'Yield_shapefile_all'. It is possible to download it, upload it to GEE and follow the below stages.  
 
 // Define the path to yield data uploaded to the GEE asset
 var yieldData=ee.FeatureCollection('Thre path to yield data location in GEE Asset');

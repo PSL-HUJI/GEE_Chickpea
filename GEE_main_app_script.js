@@ -62,7 +62,7 @@ controlPanel.add(dateOfInterestInput);
 
 // Add computation button - when clicked it will start the simulation
 var computeButton = ui.Button({
-  label: 'Model Chickpea AGB and GY',
+  label: 'Model Chickpea AGB and GW',
   onClick: onS2ButtonClick,
   style: {width: '250px'}
 });

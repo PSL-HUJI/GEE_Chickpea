@@ -2,8 +2,8 @@
 
 ## Overview
 This project contains a Google Earth Engine (GEE) script to serve as an example to create a field crops app that will:
-1. Mechanistically model growth using Sentinel-2 satellite data and AgERA5 climate data using simple conservative relationships. 
-2. Empirical forecasting Grain Yield using GEE pre-trained random forest model.
+1. Mechanistically model growth (above ground biomass and grain weight) using Sentinel-2 satellite data and AgERA5 climate data implementing simple conservative relationships. 
+2. Empirical forecasting Grain Yield using GEE empirical random forest model.
    
 #### Notes
 The mechanistic model relies on the availability of Sentinel-2 clear imagery and AgERA5 data on GEE. While Sentinel-2 is updated almost in real-time, AgERA5 data has a delay of approximately seven days. The forecast model relies on the availability of Sentinel-2 clear imagery.

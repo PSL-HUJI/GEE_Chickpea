@@ -2,7 +2,7 @@
 
 ## Overview
 This project contains a Google Earth Engine (GEE) script to serve as an example to create a field crops app that will:
-1. Mechanistically model growth (above ground biomass and grain weight) using Sentinel-2 satellite data and AgERA5 climate data implementing simple conservative relationships. 
+1. Mechanistically model growth (total above gound dry biomass and grain dry biomass) using Sentinel-2 satellite data and AgERA5 climate data implementing simple conservative relationships. 
 2. Empirical forecasting Grain Yield using GEE empirical random forest model.
    
 #### Notes
@@ -12,9 +12,9 @@ The mechanistic model relies on the availability of Sentinel-2 clear imagery and
 1. Compute LAI (Leaf Area Index) layers based on Sentinel-2 NDVI. [for example](https://brill.com/edcollchap/book/9789086869473/BP000021.xml).
 2. Linearily interpolate daily LAI layers between sowing to the latest Sentinel-2 LAI layer.
 3. Based on LAI pixel values in each layer, compute the fraction of solar intercepted radiation using the formula $1-exp(-0.5*LAI)$ 
-4. Computes daily produced biomass and cumulative biomass using the formula.
+4. Computes daily produced above ground dry biomass and total above ground dry biomass.
 5. Incorporates AgERA5 solar radiation and temperature for modeling above-ground biomass and yield using radiation use efficiency and harvest index.
-6. Present the two layers - above-ground biomass and grain weight on the map with the final simulation date.
+6. Present the two layers - total above ground dry biomass and grain dry biomass on the map with the final simulation date.
 
 ### Main Features in Function 2:
 1. Uploading a saved random forest model trained on GEE using Sentinel-2 nine bands and pixel level yield data.

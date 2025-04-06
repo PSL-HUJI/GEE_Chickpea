@@ -4,7 +4,7 @@
 
 // Create a title label for the app
 var title = ui.Label({
-  value: 'Chickpea Grain Weight Modeling and Grain Yield Forecast',
+  value: 'Chickpea Total Above Ground Dry Biomass (TAGDB) and Grain Dry Biomass (GDB) Modeling, Grain Yield (GY) Forecast',
   style: {fontSize: '15px', fontWeight: 'bold', margin: '10px', backgroundColor: 'rgba(0,0,0,0)'}
 });
 
@@ -62,7 +62,7 @@ controlPanel.add(dateOfInterestInput);
 
 // Add computation button - when clicked it will start the simulation
 var computeButton = ui.Button({
-  label: 'Model Chickpea AGB and GW',
+  label: 'Model Chickpea TAGDB and GDB',
   onClick: onS2ButtonClick,
   style: {width: '250px'}
 });
@@ -72,7 +72,7 @@ controlPanel.add(computeButton);
 
 // Add a prediction button - when clicked it will start the yield forecasting
 var predictionButton = ui.Button({
-  label: 'Forecast Chickpea Yield',
+  label: 'Forecast Chickpea GY',
   onClick: onPredictionButtonClick,
   style: {width: '250px'}
 });
@@ -133,7 +133,7 @@ explanationPanel.add(ui.Label({
 }));
 
 explanationPanel.add(ui.Label({
-  value: '3. Click "Model Chickpea AGB and GY" or "Forecast Chickpea Yield"',
+  value: '3. Click "Model Chickpea TAGDB and GDB" or "Forecast Chickpea Yield"',
   style: {fontSize: '14px', margin: '5px'}
 }));
 
@@ -334,8 +334,7 @@ function onS2ButtonClick() {
 
     // Filter the collection to include only images from one tile
     sentinel2 = sentinel2.filter(ee.Filter.eq('MGRS_TILE', mgrsTile));
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
-    // User may change the lineae LAI relationship to Sentinel-2 NDVI according to other crop type 
+  
     // Clip the image collection to the region and calculate LAI for each image based on
     // Simple linear regression between Sentinel-2 NDVI (B4 and B8) 10m (404 ground truth measurments)
     var laiCollection = sentinel2.map(function(image) {
@@ -343,7 +342,7 @@ function onS2ButtonClick() {
         var lai = ndvi.multiply(14.72).subtract(2.83).rename('LAI');
         return lai.clip(region).set('system:time_start', image.get('system:time_start'));
     });
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
     // To decide which sentinel-2 LAI layers will be taken for computation  - the field LAI average is being calculated
     // Calculate the average LAI for each image
     var laiAverages = laiCollection.map(function(image) {
@@ -418,16 +417,61 @@ function onS2ButtonClick() {
             if (maxLAI < 2 || !lastDropBelowThreshold) {
               lastDropBelowThreshold = laiData[laiData.length - 1].date; // Use the last available Sentinel-2 date
             }
-
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Simulation prepration
             // Overall objective - build a daily images from sowing date to the last date of LAI rasters by linear interpolation
             // Add one day to lastDecreaseDate to include the last decrease date in the filtering of Sentinel-2 LAI layers
-            var lastDecreaseDatePlusOne = ee.Date(lastDropBelowThreshold).advance(1, 'day');
+            // SAFELY proceed only if both dates are valid
+            if (firstDateAboveThreshold !== null && lastDropBelowThreshold !== null) {
+              // Convert to ee.Date
+              var startDate = ee.Date(firstDateAboveThreshold);
+              var endDate = ee.Date(lastDropBelowThreshold).advance(1, 'day');
 
-            // Filter the laiCollection based on the identified dates, including the lastDecreaseDate
-            var laiCollection_for_analysis = laiCollection.filter(ee.Filter.date(firstDateAboveThreshold, lastDecreaseDatePlusOne))
-                .sort('system:time_start'); // Ensure the collection is sorted by date
+              // Filter the collection
+              var laiCollection_for_analysis = laiCollection
+                .filter(ee.Filter.date(startDate, endDate))
+                .sort('system:time_start');
 
+              // Check if the collection is empty
+              laiCollection_for_analysis.size().evaluate(function(size) {
+                if (size === 0) {
+                  var warningMessage = ui.Label({
+                    value: 'No LAI products available for the current settings.\nPlease revisit later in the growing season.',
+                    style: {
+                      position: 'middle-right',
+                      padding: '8px',
+                      backgroundColor: 'rgba(255, 0, 0, 0.6)',
+                      fontSize: '14px',
+                      color: 'white',
+                      width: '300px',
+                      textAlign: 'right'
+                    }
+                  });
+
+                 mapPanel.add(warningMessage);
+                }
+
+                // You can also continue with processing here if the size > 0
+              });
+
+            } else {
+              // Show message if date inputs are not valid
+              var warningMessage = ui.Label({
+                value: 'Unable to prepare LAI simulation due to missing dates.\nPlease revisit later in the growing season.',
+                style: {
+                  position: 'middle-right',
+                  padding: '8px',
+                  backgroundColor: 'rgba(255, 0, 0, 0.6)',
+                  fontSize: '14px',
+                  color: 'white',
+                  width: '300px',
+                  textAlign: 'right'
+                }
+              });
+
+              mapPanel.add(warningMessage);
+            }     
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
             // Add an image with zero value pixels and timestamp of the sowing date
             var zeroImage = ee.Image(0).rename('LAI')
                 .clip(region)
@@ -437,7 +481,6 @@ function onS2ButtonClick() {
             
             // Sort the collection by date
             laiCollection_for_analysis = laiCollection_for_analysis.sort('system:time_start');
-            
             // Set the timestamp to 00:00:00 for all images before processing pairs
             laiCollection_for_analysis = laiCollection_for_analysis.map(function(image) {
                 var dateWithZeroTime = ee.Date(image.get('system:time_start')).update({
@@ -447,8 +490,9 @@ function onS2ButtonClick() {
                 });
                 return image.set('system:time_start', dateWithZeroTime.millis());
             });
+            
             // The overall goal is to create daily LAI raster layers between sowing date to last date of sentinel-2 LAI layer
-            // To achieve it: the collection is divided to image pairs be chronolgical order
+            // To achieve it: the collection is divided to image pairs by chronolgical order
             // between each pair daily LAI rate is calculated and than cumulative sum
             // Create a list of image pairs
             var laiList = laiCollection_for_analysis.toList(laiCollection_for_analysis.size());
@@ -558,11 +602,10 @@ function onS2ButtonClick() {
 
             //Collect the transformed Megajoule values into a list, ordered by time
             var radiationValuesListMJ = radiationValues.aggregate_array('mean_radiation_MJ');
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // Radiation Use Efficiency in units of ton per mega joul, user may change it to the RUE of other crop
+
             // Define your constant factor here
             var chosenConstant = ee.Number(0.0000003151);  
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
             // Multiply each image in intercepted_radiation by its corresponding Megajoule scalar and constant
             var biomassPerDayCollection = intercepted_radiation.map(function(image) {
               // Get the index of this image in the collection and use it to get the corresponding radiation value
@@ -657,30 +700,12 @@ function onS2ButtonClick() {
               meanValidTemperature // Replace invalid values with the mean
             );
           });
-          
-          // creating a feature collection in order to download the data into the computer locally as CSV
-          var biomassData = ee.FeatureCollection(ee.List.sequence(0, biomassDates.length().subtract(1)).map(function(i) {
-            return ee.Feature(null, {
-              'Date': biomassDates.get(i),
-              'Biomass_Mean': biomassValues.get(i),
-              'dd':adjustedTemperatureValuesList.get(i)
-            });
-          }));
-            
-          //Export the FeatureCollection as CSV
-          Export.table.toDrive({
-            collection: biomassData,
-            description: 'Biomass_Per_Day_Averages',
-            fileFormat: 'CSV'
-          });
-
           // Use the adjusted list for further calculations
           var cumulativeTemperatureSum = ee.Array(adjustedTemperatureValuesList).reduce({
             reducer: ee.Reducer.sum(),
             axes: [0] // Sum along the array
           }).get([0]);
-          ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-          // This is the cumulative degree days three-step function relationship to HI, the user may change it per other crop 
+
           // Conditional calculation based on cumulative sum range
           var transformedTemperature = ee.Algorithms.If(
             cumulativeTemperatureSum.gte(1430).and(cumulativeTemperatureSum.lte(2455)),
@@ -691,10 +716,10 @@ function onS2ButtonClick() {
               0  // Use 0 if below 1430
             )
           );
-          ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
           // Check cumulativeTemperatureSum and display message if below 1500
           if (cumulativeTemperatureSum.lt(1430).getInfo()) {
-            var warningMessage = ui.Label({
+            var warningMessagegrain = ui.Label({
               value: 'No Grain developed yet',
               style: {
                 position: 'middle-right',
@@ -705,7 +730,7 @@ function onS2ButtonClick() {
               }
             });
   
-          mapPanel.add(warningMessage);
+          mapPanel.add(warningMessagegrain);
           }
           
         // Convert transformedTemperature to an image for pixel-wise multiplication
@@ -751,9 +776,9 @@ function onS2ButtonClick() {
         // Add the label to the map panel
         mapPanel.add(endDateLabel);
         //Add totalbove ground biomass
-        mapPanel.addLayer(totalBiomass, visParams, 'Above Ground Biomass '+ formattedEndDate + ' Final day');
+        mapPanel.addLayer(totalBiomass, visParams, 'TAGDB '+ formattedEndDate + ' Final day');
         // Add totalGrainWeight to the map for visualization
-        mapPanel.addLayer(totalGrainWeight, grainWeightVisParams, 'Grain Weight '+ formattedEndDate + ' Final day');
+        mapPanel.addLayer(totalGrainWeight, grainWeightVisParams, 'GDB '+ formattedEndDate + ' Final day');
         
         
         // Ensure totalBiomass and region are defined
@@ -794,12 +819,12 @@ function onS2ButtonClick() {
 
         // Add download links to the panel with clickable labels
         downloadPanel.add(ui.Label({
-          value: 'Download Above Ground Biomass (GeoTIFF) ' + formattedEndDate,
+          value: 'Download TAGDB (GeoTIFF) ' + formattedEndDate,
           targetUrl: totalBiomassUrl,
           style: {color: 'blue', textDecoration: 'underline'}
         }));
         downloadPanel.add(ui.Label({
-          value: 'Download Grain Weight (GeoTIFF) '+ formattedEndDate,
+          value: 'Download GDB (GeoTIFF) '+ formattedEndDate,
           targetUrl: totalGrainWeightUrl,
           style: {color: 'blue', textDecoration: 'underline'}
         }));
@@ -922,12 +947,11 @@ function onPredictionButtonClick(){
   
   //Extract the date of the latest image
   var latestImageDate = ee.Date(latestImage.get('system:time_start')).format('YYYY-MM-dd').getInfo();
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // This is the part where the empirical machine learning RF model is being loaded from the asset location
+
   // Load the pre-trained Random Forest classifier
-  var classifierAssetId = 'path to the random forest classifier asset location';
+  var classifierAssetId = 'projects/pslchickpea/assets/trained_rf_yield_model';
   var savedClassifier = ee.Classifier.load(classifierAssetId);
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   // Apply the classifier to the latest image
   var predictedYield = latestImage.classify(savedClassifier).rename('predicted_yield');
 
